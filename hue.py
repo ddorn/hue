@@ -3,6 +3,7 @@
 import os
 import json
 import requests
+import re
 import click
 import colorsys
 
@@ -10,7 +11,7 @@ IP = '192.168.1.110'
 KEY = ''
 
 with open(os.path.expanduser('~/prog/hue/KEY')) as f:
-    KEY = f.read()
+    KEY = f.read().strip()
 
 
 def rgb2hsl(r, g, b):
@@ -241,6 +242,28 @@ def build_scenes():
     return scenes
 
 
+class Time(click.ParamType):
+    name = 'time'
+
+    def convert(self, value, param, ctx):
+        if isinstance(value, str):
+            found = re.match(r'^((\d{1,2})h)?(([0-5]?\d)m)?(([0-5]\d)s)?$', value)
+
+            if found and value:
+                h = found.group(2)
+                m = found.group(4)
+                s = found.group(6)
+                h = 0 if h is None else int(h) % 24
+                m = 0 if m is None else int(m)
+                s = 0 if s is None else int(s)
+
+                return h, m, s
+        elif isinstance(value, tuple) and len(value) == 3:
+            return value
+
+        self.fail(f'{value} is not a time', param, ctx)
+
+
 @click.group(invoke_without_command=True)
 @click.pass_context
 def cmd(ctx):
@@ -257,17 +280,10 @@ def set(scene):
     conf()
 
 @cmd.command()
-@click.argument('time', default=5)
-@click.argument('unit', default='m', type=click.Choice('smh'))
-def timer(time, unit):
-    if unit == 'h':
-        time *= 3600
-    elif unit == 'm':
-        time *= 60
-
-    hours = time // 3600 % 24
-    minutes = time // 60 % 60
-    seconds = time % 60
+@click.argument('time', type=Time(), default=(0, 5, 0))
+def timer(time):
+    """Set a visual timer."""
+    hours, minutes, seconds = time
     time_str = 'PT{:02}:{:02}:{:02}'.format(hours, minutes, seconds)
 
     address = 'groups', 0, 'action'
@@ -276,6 +292,27 @@ def timer(time, unit):
     schedule(f'timer {time}', time_str, *address, **command)
 
     print('Timer will go off in', f'{hours}h{minutes}m{seconds}s')
+
+
+@cmd.command()
+@click.argument('time', type=Time(), default=(0, 15, 0))
+def ssnooze(time):
+    """Snooze the motion detector."""
+
+    hours, minutes, seconds = time
+    time_str = 'PT{:02}:{:02}:{:02}'.format(hours, minutes, seconds)
+
+    address = 'sensors', 19, 'config'
+    command = dict(on=True)
+
+    # Desactivate it
+    put(*address, on=False)
+
+    # Scedule when it will turn on again
+    schedule(f'sensor-snooze {time}', time_str, *address, **command)
+
+    print('Motion detector is snoozed for ', f'{hours}h{minutes}m{seconds}s')
+
 
 
 if __name__ == '__main__':
