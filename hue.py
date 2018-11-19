@@ -336,15 +336,21 @@ class HexColorType(click.ParamType):
 @click.option('--brightness', '-b', type=click.IntRange(0, 255), help='Set the brightness')
 @click.option('--rgb', '-c', type=click.IntRange(0, 255), nargs=3, help='Set color to thw given RGB')
 @click.option('--hex', '-x', type=HexColorType(), help='Set the color to html color')
-def put_cmd(lights, on, hue, sat, brightness, rgb, hex):
+@click.option('--toggle', '-t', is_flag=True, help='Toggle the light on/off')
+def put_cmd(lights, on, hue, sat, brightness, rgb, hex, toggle):
     """
     Set a light (or more) with the given params.
 
     The hue, saturation, value has a higher priority than rgb and hex.
+    Toggle will override the on or off flag.
     """
 
     for light in lights:
         l = Light(light)
+
+        if toggle:
+            l.update()
+            on = not l.on
 
         d = {}
         if on is not None:
