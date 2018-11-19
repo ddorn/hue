@@ -10,6 +10,7 @@ import colorsys
 IP = '192.168.1.110'
 KEY = ''
 
+
 with open(os.path.expanduser('~/prog/hue/KEY')) as f:
     KEY = f.read().strip()
 
@@ -312,6 +313,62 @@ def ssnooze(time):
     schedule(f'sensor-snooze {time}', time_str, *address, **command)
 
     print('Motion detector is snoozed for ', f'{hours}h{minutes}m{seconds}s')
+
+
+class HexColorType(click.ParamType):
+    name = 'hex color'
+
+    def convert(self, value, param, ctx):
+        if isinstance(value, str):
+            found = re.match(r'^#?[0-9A-Fa-f]{6}$', value)
+            if value[0] != '#':
+                value = '#' + value
+
+            return value
+
+        self.fail(f'{value} is not a color in hexadecimal form (#RRGGBB)', param, ctx)
+
+@cmd.command(name='put')
+@click.argument('lights', nargs=-1)
+@click.option('--on/--off', '-1/-0', is_flag=True, help='Switch the light on or off')
+@click.option('--hue', '-h', type=click.IntRange(0, 65535), help='Set the light\'s hue')
+@click.option('--sat', '-s', type=click.IntRange(0, 255), help='Set the saturation')
+@click.option('--brightness', '-b', type=click.IntRange(0, 255), help='Set the brightness')
+@click.option('--rgb', '-c', type=click.IntRange(0, 255), nargs=3, help='Set color to thw given RGB')
+@click.option('--hex', '-x', type=HexColorType(), help='Set the color to html color')
+def put_cmd(lights, on, hue, sat, brightness, rgb, hex):
+    """
+    Set a light (or more) with the given params.
+
+    The hue, saturation, value has a higher priority than rgb and hex.
+    """
+
+    for light in lights:
+        l = Light(light)
+
+        d = {}
+        if on is not None:
+            d['on'] = on
+        elif hue is not None or sat is not None or brightness is not None:
+            if hue is not None:
+                d['hue'] = hue
+            if sat is not None:
+                d['sat'] = sat
+            if brightness is not None:
+                d['bri'] = brightness
+        elif rgb:
+            h, s, b = rgb2hsl(*rgb)
+            d['hue'] = h
+            d['sat'] = s
+            d['bri'] = b
+        elif hex is not None:
+            h, s, b = rgb2hsl(int(hex[1:3], 16), int(hex[3:5], 16), int(hex[5:], 16))
+            d['hue'] = h
+            d['sat'] = s
+            d['bri'] = b
+
+        put(l.state_addr, **d)
+
 
 
 
