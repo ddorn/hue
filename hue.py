@@ -20,6 +20,15 @@ def rgb2hsl(r, g, b):
     return int(65535 * h), int(255 * s), int(255 * l)
 
 
+def hsl2rgb(h, s, l):
+    r, g, b = colorsys.hsv_to_rgb(h / 65535, s / 255, l / 255)
+    return int(255 * r), int(255 * g), int(255 * b)
+
+
+def rgb2hex(r, g, b):
+    return '#' + ''.join(map(lambda x: '0' * (x < 16) + hex(x)[2:], (r, g, b)))
+
+
 def clamp(x, min=0, max=255):
     if x < min:
         return min
@@ -139,6 +148,14 @@ class Light:
         hue = clamp(hue, 0, 65535)
         self._hue = hue
         put(self.state_addr, 'state', hue=hue)
+
+    @property
+    def rgb(self):
+        return hsl2rgb(*self.hsl)
+
+    @property
+    def hex(self):
+        return rgb2hex(*self.rgb)
 
 
 def schedule(name, time, *address, **action):
@@ -374,6 +391,46 @@ def put_cmd(lights, on, hue, sat, brightness, rgb, hex, toggle):
             d['bri'] = b
 
         put(l.state_addr, **d)
+
+
+@cmd.command(name='get')
+@click.argument('lights', default=0)
+@click.argument('what', default='all')
+@click.option('-p', '--porcelain', is_flag=True, help='Show the output in a parsable way')
+def get_cmd(lights, what, porcelain):
+    """
+    Get the current state of the lights.
+    """
+
+    if lights == 0:
+        lights = [1, 2]
+    else:
+        lights = [lights]
+
+    for light in lights:
+        l = Light(light, True)
+        if what == 'on':
+            print(l.on)
+        elif what == 'bri':
+            print(l.bri)
+        elif what == 'sat':
+            print(l.sat)
+        elif what == 'hue':
+            print(l.hue)
+        elif what == 'rgb':
+            print(l.rgb)
+        elif what == 'hex':
+            print(l.hex)
+        else:
+            print('on:', l.on)
+            print('bri:', l.bri)
+            print('sat:', l.sat)
+            print('hue:', l.hue)
+            print('rgb:', ';'.join(map(str, l.rgb)))
+            print('hex:', l.hex)
+
+
+    # TODO : Add a sexy output if not porcelain
 
 
 
