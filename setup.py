@@ -16,7 +16,7 @@ setup(
     long_description=description,
     # install_requires=[],
     # include_package_data=True,
-    scripts=dict(console_scripts=['hue=hue.hue:main']),
+    # scripts=dict(console_scripts=['hue=hue.hue:cmd']),
     keywords='hue philips lights automation sexy'
 )
 
