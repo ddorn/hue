@@ -11,10 +11,6 @@ IP = '192.168.1.110'
 KEY = ''
 
 
-with open(os.path.expanduser('~/prog/hue/KEY')) as f:
-    KEY = f.read().strip()
-
-
 def rgb2hsl(r, g, b):
     h, s, l = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
     return int(65535 * h), int(255 * s), int(255 * l)
@@ -282,12 +278,18 @@ class Time(click.ParamType):
         self.fail(f'{value} is not a time', param, ctx)
 
 
+def set_key(ctx, value, param):
+    global KEY
+    if not param:
+        ctx.fail("You need to pass the hue key")
+    KEY = param
+
 @click.group(invoke_without_command=True)
+@click.option('--key', envvar='HUE_KEY', callback=set_key, expose_value=0)
 @click.pass_context
 def cmd(ctx):
     if ctx.invoked_subcommand is None:
         main()
-
 
 @cmd.command()
 @click.argument('scene')
