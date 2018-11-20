@@ -422,6 +422,7 @@ def get_cmd(lights, what, porcelain):
         elif what == 'hex':
             print(l.hex)
         else:
+            print('-', l.id)
             print('on:', l.on)
             print('bri:', l.bri)
             print('sat:', l.sat)
