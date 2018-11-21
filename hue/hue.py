@@ -8,7 +8,7 @@ import click
 import colorsys
 
 IP = '192.168.1.110'
-KEY = ''
+KEY = os.environ.get('HUE_KEY', '')
 
 
 def rgb2hsl(r, g, b):
@@ -34,6 +34,7 @@ def clamp(x, min=0, max=255):
 
 
 def ressource_to_url(*ressource):
+    assert KEY, 'Something is wrong, there\'s no KEY. Check your env.'
     return '/'.join(('http:/', IP, 'api', KEY) + tuple(map(str, ressource)))
 
 
