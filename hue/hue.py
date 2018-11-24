@@ -285,7 +285,7 @@ def set_key(ctx, value, param):
         ctx.fail("You need to pass the hue key")
     KEY = param
 
-@click.group(invoke_without_command=True)
+@click.group(invoke_without_command=True, context_settings=dict(help_option_names=['-h', '--help']))
 @click.option('--key', envvar='HUE_KEY', callback=set_key, expose_value=0)
 @click.pass_context
 def cmd(ctx):
@@ -350,7 +350,7 @@ class HexColorType(click.ParamType):
 
 @cmd.command(name='put')
 @click.argument('lights', nargs=-1)
-@click.option('--on/--off', '-1/-0', is_flag=True, help='Switch the light on or off')
+@click.option('--on/--off', '-1/-0', is_flag=True, default=None, help='Switch the light on or off')
 @click.option('--hue', '-h', type=click.IntRange(0, 65535), help='Set the light\'s hue')
 @click.option('--sat', '-s', type=click.IntRange(0, 255), help='Set the saturation')
 @click.option('--brightness', '-b', type=click.IntRange(0, 255), help='Set the brightness')
@@ -365,6 +365,12 @@ def put_cmd(lights, on, hue, sat, brightness, rgb, hex, toggle):
     Toggle will override the on or off flag.
     """
 
+    print(on)
+    if 'all' in lights:
+        lights = (1, 2)
+    if '0' in lights:
+        lights = (1, 2)
+
     for light in lights:
         l = Light(light)
 
@@ -375,7 +381,7 @@ def put_cmd(lights, on, hue, sat, brightness, rgb, hex, toggle):
         d = {}
         if on is not None:
             d['on'] = on
-        elif hue is not None or sat is not None or brightness is not None:
+        if hue is not None or sat is not None or brightness is not None:
             if hue is not None:
                 d['hue'] = hue
             if sat is not None:
