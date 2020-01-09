@@ -9,6 +9,7 @@ import colorsys
 
 IP = '192.168.1.110'
 KEY = os.environ.get('HUE_KEY', '')
+ALL = (1, 2, 3)
 
 
 def rgb2hsl(r, g, b):
@@ -243,15 +244,15 @@ def build_scenes():
     on = 'on'
     hsl = lambda h, s, l: {hue: h, sat: s, bri: l}
 
-    add_scene('off', {on: False}, {on: False})
-    add_scene('on', {on: True}, {on: True})
-    add_scene('algebre', *(hsl(4000, 255, 255),) * 2)
-    add_scene('analyse', *(hsl(0, 255, 255),) * 2)
-    add_scene('geo', *(hsl(47135, 255, 135),) * 2)
-    add_scene('physique', *(hsl(51130, 250, 105),) * 2)
-    add_scene('info', *(hsl(58585, 255, 85),) * 2)
-    add_scene('bright', *(hsl(5000, 25, 255),) * 2)
-    add_scene('dim', *(hsl(4000, 255, 0),) * 2)
+    add_scene('off', *({on: False},) * len(ALL))
+    add_scene('on', *({on: True},) * len(ALL))
+    add_scene('algebre', *(hsl(4000, 255, 255),) * len(ALL))
+    add_scene('analyse', *(hsl(0, 255, 255),) * len(ALL))
+    add_scene('geo', *(hsl(47135, 255, 135),) * len(ALL))
+    add_scene('physique', *(hsl(51130, 250, 105),) * len(ALL))
+    add_scene('info', *(hsl(58585, 255, 85),) * len(ALL))
+    add_scene('bright', *(hsl(5000, 25, 255),) * len(ALL))
+    add_scene('dim', *(hsl(4000, 255, 0),) * len(ALL))
     scenes['toggle'] = toggle
 
     return scenes
@@ -366,9 +367,9 @@ def put_cmd(lights, on, hue, sat, brightness, rgb, hex, toggle):
     """
 
     if 'all' in lights:
-        lights = (1, 2, 3)
+        lights = ALL
     if '0' in lights:
-        lights = (1, 2, 3)
+        lights = ALL
 
     for light in lights:
         l = Light(light)
@@ -411,7 +412,7 @@ def get_cmd(lights, what, porcelain):
     """
 
     if lights == 0:
-        lights = [1, 2]
+        lights = ALL
     else:
         lights = [lights]
 
