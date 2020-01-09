@@ -365,11 +365,10 @@ def put_cmd(lights, on, hue, sat, brightness, rgb, hex, toggle):
     Toggle will override the on or off flag.
     """
 
-    print(on)
     if 'all' in lights:
-        lights = (1, 2)
+        lights = (1, 2, 3)
     if '0' in lights:
-        lights = (1, 2)
+        lights = (1, 2, 3)
 
     for light in lights:
         l = Light(light)
