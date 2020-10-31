@@ -17,7 +17,7 @@ setup(
     # install_requires=[],
     # include_package_data=True,
     scripts=['hue/hue.py'],
-    install_requires=['ansimarkup', 'click', ],
+    install_requires=['click', ],
     keywords='hue philips lights automation sexy'
 )
 

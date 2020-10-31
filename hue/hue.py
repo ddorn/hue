@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import os
 import json
@@ -7,7 +7,7 @@ import re
 import click
 import colorsys
 
-IP = '192.168.1.110'
+IP = os.environ.get("HUE_IP", '192.168.1.101')
 KEY = os.environ.get('HUE_KEY', '')
 ALL = (1, 2, 3)
 
@@ -170,7 +170,6 @@ def schedule(name, time, *address, **action):
 def main():
     import curses
     from curses import wrapper
-    import ansimarkup
 
     def loop(screen):
         curses.curs_set(False)
